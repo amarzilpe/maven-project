@@ -1,0 +1,27 @@
+pipeline{
+    agent any 
+    stages{
+        stage('source pulling'){
+            steps{
+                git 'https://github.com/amarzilpe/maven-project.git'
+            }
+        }
+        stage('Build'){
+            steps{
+                withSonarQubeEnv(installationName: 'sonar_server',credentialsId: 'sonar_key') {
+                sh 'mvn clean package sonar:sonar'
+                }
+            }
+        }
+        stage('Test-Quality'){
+            steps{
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar_key'
+            }
+        }
+        stage('Deploy'){
+            steps{
+                echo "Successfully deployed."
+            }
+        }
+    }
+}
